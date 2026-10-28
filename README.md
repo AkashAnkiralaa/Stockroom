@@ -42,7 +42,7 @@ Open <http://localhost:5176>. Vite proxies `/api` requests to the backend.
 - Search by product name or ID.
 - Update product price and/or quantity.
 - Highlight products with fewer than five units.
-- Persist inventory in a local H2 database.
+- Persist inventory in a local H2 database (Render's free filesystem is temporary; see deployment notes).
 
 ## REST API
 
@@ -77,3 +77,17 @@ The H2 console is available at <http://localhost:8082/h2-console> while the back
 cd backend && mvn test
 cd ../frontend && npm install && npm run build
 ```
+
+## Deploy to Render and Vercel
+
+The deployment configuration is prepared for a standalone GitHub repository containing these project files at its root:
+
+- `render.yaml` and `backend/Dockerfile` configure the Spring Boot API on Render's free web-service plan.
+- `frontend/vercel.json` configures the Vite single-page app for Vercel.
+
+1. Push the contents of this project folder to a GitHub repository you control.
+2. In Render, create a new Blueprint from that repository and apply `render.yaml`. The API service URL will look like `https://stockroom-api.onrender.com`.
+3. In the Vercel dashboard, import the same repository and set **Root Directory** to `frontend`. Set the environment variable `VITE_API_BASE_URL` to the Render API origin, with no trailing slash (for example, `https://stockroom-api.onrender.com`), then deploy.
+4. Once Vercel assigns the site URL, tighten Render's `CORS_ALLOWED_ORIGINS` environment variable to that exact URL, such as `https://your-project.vercel.app`, and redeploy the API.
+
+Render's free service uses an ephemeral filesystem. The H2 database file is kept at `/tmp/inventorydb` while the service is running, but **may be erased on restart or redeploy**. Render persistent disks require a paid service; choose one before using this app for important inventory. The deployed H2 console is disabled, and Render generates a database password automatically. Local development continues to use the H2 console at `http://localhost:8082/h2-console` with an empty password.

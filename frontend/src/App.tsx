@@ -13,9 +13,10 @@ type ProductForm = Omit<Product, 'price' | 'quantity'> & { price: string; quanti
 
 const emptyForm: ProductForm = { productId: '', name: '', price: '', quantity: '', category: '' }
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(`${apiBaseUrl}${url}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
   })
